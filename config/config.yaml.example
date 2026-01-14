@@ -1,0 +1,12 @@
+# AGDash Configuration Example
+# Copy to config.yaml and fill in your values
+
+adguard:
+  - name: "DNS1"
+    url: "https://dns1.example.com"
+    username: "admin"
+    password: "your-password-here"
+  - name: "DNS2"
+    url: "https://dns2.example.com"
+    username: "admin"
+    password: "your-password-here"

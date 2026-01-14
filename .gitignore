@@ -1,0 +1,7 @@
+/.envrc
+__pycache__/
+*.pyc
+.venv/
+/*.png
+*.zip
+config/config.yaml

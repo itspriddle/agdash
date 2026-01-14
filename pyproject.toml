@@ -1,0 +1,37 @@
+[project]
+name = "agdash"
+version = "0.1.0"
+description = "NanoPi NEO2 OLED dashboard"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "luma.oled>=3.13.0",
+    "pillow>=10.0.0",
+    "requests>=2.31.0",
+    "pyyaml>=6.0.0",
+]
+
+[project.optional-dependencies]
+nanopi = [
+    "OPi.GPIO>=0.5.0",
+]
+dev = [
+    "ruff>=0.8.0",
+]
+
+[project.scripts]
+agdash = "agdash.main:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/agdash"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]

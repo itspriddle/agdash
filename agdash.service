@@ -1,0 +1,14 @@
+[Unit]
+Description=AGDash Dashboard
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/agdash
+ExecStart=/opt/agdash/.venv/bin/python -m agdash.main
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
