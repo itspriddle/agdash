@@ -11,6 +11,19 @@ if TYPE_CHECKING:
     from agdash.hardware.display import Display
 
 
+def round_to_display(n: int) -> int:
+    """Round number to the display precision used by fmt_num.
+
+    This ensures that when we sum values for the ALL row, the math
+    matches what the user sees: 60k + 26k = 86k, not 87k.
+    """
+    if n >= 1_000_000:
+        return (n // 100_000) * 100_000
+    elif n >= 1_000:
+        return (n // 1_000) * 1_000
+    return n
+
+
 def fmt_num(n: int) -> str:
     """Format number with k/M suffix (truncated/floor for intuitive display)."""
     if n >= 1_000_000:
@@ -104,10 +117,11 @@ class AdGuardScreen:
                 "pct": f"{inst.get('blocked_pct', 0):.0f}%",
             })
 
-        # ALL row with totals
+        # ALL row with totals - sum rounded values so display math is consistent
+        # (e.g., 60k + 26k = 86k, not 87k from rounding after sum)
         all_on = all(i.get("enabled", False) for i in self.instances) if self.instances else False
-        total_queries = sum(i.get("queries", 0) for i in self.instances)
-        total_blocked = sum(i.get("blocked", 0) for i in self.instances)
+        total_queries = sum(round_to_display(i.get("queries", 0)) for i in self.instances)
+        total_blocked = sum(round_to_display(i.get("blocked", 0)) for i in self.instances)
         total_pct = (total_blocked / total_queries * 100) if total_queries > 0 else 0
         items.append({
             "name": "ALL",
@@ -202,8 +216,8 @@ class AdGuardScreen:
     def _render_all_menu(self, display: Display) -> None:
         """ALL menu screen: status summary and action options."""
         all_on = all(i.get("enabled", False) for i in self.instances) if self.instances else False
-        total_queries = sum(i.get("queries", 0) for i in self.instances)
-        total_blocked = sum(i.get("blocked", 0) for i in self.instances)
+        total_queries = sum(round_to_display(i.get("queries", 0)) for i in self.instances)
+        total_blocked = sum(round_to_display(i.get("blocked", 0)) for i in self.instances)
         total_pct = (total_blocked / total_queries * 100) if total_queries > 0 else 0
 
         # Calculate which 2 menu items to show (scroll window)
