@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+import time
 from typing import TYPE_CHECKING, Callable, Optional
 
 from agdash.hardware.display import WIDTH, HEIGHT, ICON
@@ -82,6 +83,8 @@ class AdGuardScreen:
         self.duration_selected = 0
         self.loading = False
         self._display: Optional[Display] = None
+        self._last_activity = 0.0  # No highlight until first button press
+        self._idle_timeout = 60.0  # Seconds before hiding home selection
 
     def update(self, instances: list[dict]) -> None:
         self.instances = instances
@@ -130,12 +133,14 @@ class AdGuardScreen:
             "pct": f"{total_pct:.0f}%",
         })
 
+        show_selection = (time.time() - self._last_activity) < self._idle_timeout
+
         def draw(d):
             # Rows 0-2: DNS1, DNS2, ALL (row 3 is blank)
             for row in range(min(len(items), 3)):
                 item = items[row]
                 y = self._row_y(row)
-                sel = row == self.selected
+                sel = show_selection and row == self.selected
 
                 if sel:
                     d.rectangle([0, y, WIDTH - 1, y + self.ROW_H - 1], fill="white")
@@ -344,8 +349,13 @@ class AdGuardScreen:
 
         display.render(draw)
 
+    def _touch_activity(self) -> None:
+        """Record button activity to keep selection visible."""
+        self._last_activity = time.time()
+
     def on_k1(self) -> None:
         """Navigate up."""
+        self._touch_activity()
         if self.in_duration:
             self.duration_selected = (self.duration_selected - 1) % len(self.DURATION_OPTIONS)
         elif self.in_confirm:
@@ -360,6 +370,7 @@ class AdGuardScreen:
 
     def on_k2(self) -> None:
         """Select current item."""
+        self._touch_activity()
         if self.in_duration:
             # Duration option selected
             _, duration_ms = self.DURATION_OPTIONS[self.duration_selected]
@@ -481,6 +492,7 @@ class AdGuardScreen:
 
     def on_k3(self) -> None:
         """Navigate down."""
+        self._touch_activity()
         if self.in_duration:
             self.duration_selected = (self.duration_selected + 1) % len(self.DURATION_OPTIONS)
         elif self.in_confirm:
